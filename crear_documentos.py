@@ -206,7 +206,7 @@ def  FORM_DATOS_NUEVOS_PARA_TRABAJADOR(cliente):
     time.sleep(5)
 
     imagen_actor = generar_imagen_inline(doc, cliente['Adjunta Imagen de la Ubicacion de Google Maps de casa Trabajador.'])
-    link_ubicacion_actor = cliente['Ubicacion de tu casa. Copia el link de la ubicacion de google']
+    link_ubicacion_actor = cliente['Ubicacion de tu casa. Copia el link de la ubicacion de google maps']
     qr_actor = generar_qr_inline(doc,link_ubicacion_actor)
     imagen_demandado = generar_imagen_inline(doc,cliente['Adjunta Imagen de la Ubicacion de Google Maps de la empresa'])
     link_ubicacion_demandado = cliente['Ubicacion de la empresa']
