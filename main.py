@@ -232,7 +232,8 @@ class DemandaLaboralApp:
             subir_archivos_a_drive(self.drive_service, 'Generado', Carpeta_Personal)
 
             # Mensaje de éxito y resetear estado
-            self.status_message.value = "✅ Documentos generados y subidos exitosamente!"
+            self.status_message.value = f"✅ Documentos generados y subidos exitosamente! [Carpeta Generada](https://drive.google.com/drive/folders/{Carpeta_Personal})"
+
             self.verification_state = False  # Volver al estado inicial
             self.cedula_field.value = ""  # Limpiar campo de cédula
 

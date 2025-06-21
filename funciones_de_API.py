@@ -32,7 +32,7 @@ SHEET_NAME = 'Respuestas de formulario 1'
 
 
 
-def get_authenticated_service(api_name, api_version):
+'''def get_authenticated_service(api_name, api_version):
     """Obtiene el servicio autenticado para diferentes APIs de Google"""
     creds = None
     
@@ -53,7 +53,43 @@ def get_authenticated_service(api_name, api_version):
         with open(token_path, 'w') as token:
             token.write(creds.to_json())
     
+    return build(api_name, api_version, credentials=creds)'''
+
+def get_authenticated_service(api_name, api_version):
+    """Obtiene el servicio autenticado para diferentes APIs de Google"""
+    creds = None
+
+    # Intenta usar cuenta de servicio si existe
+    sa_path = resource_path('service_account.json')
+    if os.path.exists(sa_path):
+        creds = service_account.Credentials.from_service_account_file(sa_path, scopes=SCOPES)
+
+    # Intenta usar token.json (credenciales de usuario)
+    elif os.path.exists(resource_path('token.json')):
+        creds = Credentials.from_authorized_user_file(resource_path('token.json'), SCOPES)
+
+    # Si no hay credenciales válidas o se vencieron
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"[ERROR] No se pudo refrescar el token: {e}")
+                creds = None
+        if not creds:
+            try:
+                credentials_path = resource_path('credentials.json')
+                flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
+                creds = flow.run_local_server(port=0)
+                with open(resource_path('token.json'), 'w') as token:
+                    token.write(creds.to_json())
+            except Exception as e:
+                print(f"[ERROR] Falló la autenticación del usuario: {e}")
+                raise e  # opcionalmente detener ejecución
+
+    # Crear y retornar el servicio
     return build(api_name, api_version, credentials=creds)
+
 
 def get_client_by_cedula(sheets_service, spreadsheet_id, sheet_name, cedula):
     """
