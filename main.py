@@ -24,10 +24,11 @@ class DemandaLaboralApp:
         self.PARENT_FOLDER_ID = PARENT_FOLDER_ID
         # Diccionario con datos del cliente
         self.cliente = {}
+        self.indemnizacion = None
 
     def setup_page(self):
         """Configura las propiedades iniciales de la página"""
-        self.page.title = "Clientes Demanda Laboral"
+        self.page.title = "Clientes Demanda Laboral individual"
         self.page.window_width = 650
         self.page.window_height = 750
         self.page.window_resizable = False
@@ -128,7 +129,7 @@ class DemandaLaboralApp:
                     [
                         ft.Container(height=20),
                         ft.Text(
-                            "CASO NUEVO",
+                            "PROCESO LABORAL INDIVIDUAL",
                             size=26,
                             weight=ft.FontWeight.BOLD,
                             color=ft.Colors.BLUE_900,
@@ -182,11 +183,21 @@ class DemandaLaboralApp:
                         self.SHEET_NAME, 
                         self.cedula_field.value
                     )
+                    #PARA DATOS DE LA INDEMNIZACION
+                    datos_indemnizacion = get_client_by_cedula(
+                        self.sheets_service,
+                        '1_5IByOzQdnhWLF8IPE1HuIAnCV6iMG-yrhbE8dFod20',
+                        'Respuestas de formulario 1',
+                        self.cedula_field.value
+                    )
                     self.cliente.update(datos_cliente)
-                    
+                    self.indemnizacion = datos_indemnizacion                    
                     if datos_cliente:
                         self.verification_state = True
-                        self.status_message.value = f"✅ Cliente Encontrado: {datos_cliente['Nombres y Apellidos completos como esta en tu Cedula.'].upper()}"
+                        self.status_message.value = (
+    f"✅ Cliente Encontrado: {datos_cliente['Nombres y Apellidos completos como esta en tu Cedula.'].upper()}\n\n"  
+    f"📝 Estado: {'Cálculo indemnización disponible' if self.indemnizacion else 'Aun no existen datos para indemnizacion, puede agregarlos [aqui](https://docs.google.com/forms/d/e/1FAIpQLScY7z47yyIUUo2Pjku4OxFTXEkgtYy24m7oV4ghi2yUNCPIjg/viewform?usp=dialog)'}"
+)
                     else:
                         #self.verification_state = True
                         self.status_message.value = f"❌ No se encontró ningún cliente con cédula {self.cedula_field.value}. Puede [registrar un cliente aquí](https://docs.google.com/forms/d/e/1FAIpQLSdij2KwIkAIpzZao4EjUJ4Xn9-CRFQcpxj9qt-SxgmO97Uvzw/viewform?usp=header)"
@@ -219,14 +230,16 @@ class DemandaLaboralApp:
                 ("Generando Carta de Poder...", Carta_Poder),
                 ("Generando Carta de Compromiso...", Carta_Compromiso),
                 ("Generando Desistimiento de renuncia...", Desistimiento_de_renuncia),
-                ("Generando nota de renuncia...", Nota_de_Renuncia),
-                ("Redactando documento de demanda...", documento_demanda)
+                ("Generando nota de renuncia...", Nota_de_Renuncia)
             ]
 
             for mensaje, funcion in documentos:
                 self.show_loading(mensaje)
                 funcion(self.cliente)
-                time.sleep(0.1)  # Usar await con asyncio.sleep
+                time.sleep(0.1)
+            print("Generando Documento de demanda...")
+            documento_demanda(self.cliente,self.indemnizacion)
+            
 
             self.show_loading("Subiendo archivos a Drive...")
             subir_archivos_a_drive(self.drive_service, 'Generado', Carpeta_Personal)
